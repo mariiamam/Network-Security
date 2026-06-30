@@ -1,0 +1,214 @@
+Group Members:
+
+Name: Bader Swarka , ID: 213402241
+Name: Mariam Amer, ID: 212737258
+
+Project: PhishGuard
+
+1. What the tool does
+
+PhishGuard is a rule-based and AI-assisted phishing email detection tool.
+The user enters email details and text, and the system checks if the email looks safe or suspicious.
+The main detection is done using local rules that check for common phishing signs such as suspicious links, urgent words, password requests, payment requests, strange domains, and company impersonation.
+The project can also use an LLM as an extra analysis layer. The LLM gives a second opinion, explains the possible risk, and suggests recommended actions. If the online AI service is not available, the project uses a local fallback.
+
+2. Main idea
+
+The main idea is not to rely only on AI.
+The project first uses clear rule-based checks to detect suspicious signs and calculate a risk score. After that, the assistant analysis can add another opinion and make the result easier to understand.
+This way, the project can still work without an API key, while also supporting an optional LLM-based explanation when the online service is available.
+
+3. Does the tool answer the project goal?
+
+The goal of the project is to help users notice phishing emails before clicking links or giving personal details.
+The tool answers this goal because it checks the email, gives a risk score and risk level, and explains the suspicious signs that were found.
+It also shows passed checks and gives recommended actions.
+
+4. AI declaration 
+
+I used AI tools as a supporting aid during the development of this project. 
+The use of AI was mainly for debugging assistance, improving code organization, clarifying implementation issues, 
+and helping me think through possible fixes when problems occurred.
+
+
+
+5. Problems we faced
+
+* Some phishing emails are hard to detect using fixed rules.
+* One email can contain both normal and suspicious parts.
+* Suspicious links can use shorteners, IP addresses, unusual domains, or many subdomains.
+* The score needed to show the difference between weak and serious warning signs.
+* The OpenAI request can fail when the API key is missing, invalid, or has no available quota.
+* The result needed to stay clear even when many checks were performed.
+
+6. Strengths of the tool
+
+* The page is simple to use.
+* The tool gives reasons for the result instead of showing only a score.
+* The local rule-based detector works without an API key.
+* It checks the email text, sender, reply-to address, links, claimed company, and received-hop count.
+* It shows suspicious indicators and passed checks.
+* It supports strict, balanced, and relaxed detection modes.
+* It includes sample emails and a test set evaluation.
+* The optional OpenAI analysis adds another analysis layer.
+* A local assistant fallback is used if the OpenAI request is unavailable.
+
+7. Weaknesses of the tool
+
+* PhishGuard is not a complete security system.
+* Some phishing emails may not be detected.
+* The rules cannot understand every possible email context.
+* The trusted company and domain lists are limited.
+* The user must enter the email details manually.
+
+8. General work description
+
+The user opens the PhishGuard page.
+The user enters the sender, reply-to address, claimed organization, subject, received-hop count, and email content.
+The user can also load one of the sample emails and choose a detection mode.
+
+The user clicks the Analyze button.
+The detector checks the email text, addresses, links, and other details.
+The system calculates a risk score from 0 to 100 and gives a low, medium, or high risk level.
+
+When assistant analysis is enabled, the project tries the backend OpenAI service first.
+If it is not available, the local assistant fallback is used.
+
+The result is shown with suspicious indicators, passed checks, an explanation, recommended actions, and a text report.
+
+9. Main code components
+
+index.html:
+This file contains the main page structure.
+It includes the fields for sender email, reply-to, claimed organization, subject, detection mode, received hops, and email content.
+It also contains the Analyze and Clear buttons, sample selector, loading area, result sections, report box, and evaluation section.
+The page loads styles/styles.css and the JavaScript files from src.
+
+styles/styles.css:
+This file controls the page design.
+It handles the layout, colors, buttons, cards, input fields, loading display, result section, and responsive layout.
+It works with the classes and elements in index.html and does not change the detection logic.
+
+src/app.js:
+This file connects the page with the detection logic.
+The readForm() function collects the values from the input fields, and the submit event passes them to analyzeEmailAssisted().
+The renderResult() function shows the score, risk level, findings, passed checks, assistant details, and report.
+It also handles empty-input validation, loading messages, clearing the form, loading samples, and running the sample evaluation.
+
+src/detector.js:
+This file contains the main phishing detection logic.
+The analyzeEmail() function checks text patterns, sender and reply-to domains, received hops, links, suspicious domains, and brand impersonation.
+It adds weighted points, creates the risk score, classifies the risk level, and builds the explanation and report.
+The analyzeEmailAssisted() function starts with the local result and can combine it with the assistant verdict.
+The file also contains URL helper functions, the structured summary for the backend, and evaluateSamples() for the built-in test set.
+
+src/samples.js:
+This file stores the sampleEmails list.
+The samples include phishing, legitimate, and gray-area emails with expected labels.
+src/app.js uses them in the sample selector, and evaluateSamples() uses them to calculate the evaluation results.
+
+src/llm.js:
+This file contains the assistant functions used by src/detector.js.
+realLlmSummarizeEmail() sends the structured summary to the backend endpoint.
+mockLlmSummarizeEmail() provides the local fallback and checks common text and URL signals when the online request is not available.
+It also builds a short assistant verdict, reasons, likely goal, and recommended actions.
+
+server.js:
+This file contains the Express backend.
+It serves the project files and receives structured assistant requests at /api/analyze-llm.
+When an API key is available, analyzeWithOpenAI() sends the structured summary to the OpenAI Responses API and checks the returned JSON format.
+The local detector remains the main detector, and the online LLM is only an extra layer.
+
+package.json:
+This file contains the project information, Node.js requirement, dependencies, and run script.
+It lists Express and dotenv and connects npm start to server.js.
+
+package-lock.json:
+This file stores the exact installed dependency versions.
+It is used with package.json so npm installs the same dependency versions for the project.
+
+.env.example:
+This file shows the environment variable names used by the backend.
+It contains a placeholder for OPENAI_API_KEY and optional settings for the model and port.
+It can be copied to a local .env file, but it does not contain a real API key.
+
+Implementation Flow:
+
+1. The user fills the email fields.
+2. The user clicks Analyze.
+3. src/app.js reads the input values.
+4. The data is passed to the detector.
+5. src/detector.js checks the email using local rules.
+6. A risk score and risk level are created.
+7. src/app.js shows the result on the page.
+8. If the LLM backend is available, an extra assistant analysis may also be shown. If it is unavailable, the local fallback can be used.
+
+10. How detection works
+
+The project checks the email for suspicious patterns.
+
+The checks include:
+
+* urgent words and pressure messages
+* fake login or account suspension messages
+* password, username, card, and one-time-code requests
+* payment and invoice requests
+* suspicious or shortened links
+* raw IP address links
+* unencrypted HTTP links
+* punycode and long subdomain links
+* suspicious top-level domains
+* different sender and reply-to domains
+* a claimed company that does not match its trusted domains
+* QR phishing text
+* unusual received-hop counts
+
+Each suspicious sign has a weight and adds points to the risk score.
+Serious signs add more points.
+More suspicious signs normally give a higher risk level.
+
+The selected detection mode changes the score multiplier and detection thresholds.
+The system also records passed checks, such as matching sender and reply-to domains or no clickable links.
+
+The assistant can add a second verdict.
+When an assistant result is available, the final score uses 70 percent of the rule-based score and 30 percent of the assistant verdict.
+
+11. How to run the project
+
+Requirements:
+
+* Node.js 18 or newer
+
+From the project folder, run:
+
+npm install
+npm start
+
+Then open:
+
+http://localhost:3000
+
+OpenAI setup is optional.
+To use the real AI service, create a .env file based on .env.example and set:
+
+OPENAI_API_KEY=your_key_here
+
+The model and port can also be changed with OPENAI_MODEL and PORT.
+Without an API key, the local fallback is used.
+
+12. Testing and evaluation
+
+To test the project:
+
+1. Run the project.
+2. Enter a normal email.
+3. Check that the result is low risk.
+4. Enter a suspicious email with an urgent message or fake link.
+5. Check that the risk score becomes higher.
+6. Test an email asking for a password or payment details.
+7. Test empty input and check that the validation message appears.
+8. Test with and without the OpenAI API key.
+9. Load the built-in samples and click Run Evaluation.
+The evaluation section tests the rule-based detector with the sample emails in src/samples.js.
+It shows accuracy, precision, recall, true positives, true negatives, false positives, and false negatives.
+

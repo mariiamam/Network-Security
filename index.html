@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PhishGuard Email Defense Triage</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace" aria-label="Email phishing analyzer">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Email Phishing Triage for Network Defense</p>
+            <h1>PhishGuard</h1>
+          </div>
+          <div class="status-pill" id="riskPill">Waiting for email</div>
+        </header>
+
+        <section class="analyzer">
+          <form class="input-panel" id="emailForm">
+            <div class="field-grid">
+              <label>
+                Sender email
+                <input id="sender" type="email" placeholder="security@paypaI-alerts.com" autocomplete="off" />
+              </label>
+              <label>
+                Reply-to
+                <input id="replyTo" type="email" placeholder="support-team@temporary-mail.net" autocomplete="off" />
+              </label>
+              <label>
+                Claimed organization
+                <input id="claimedBrand" type="text" placeholder="PayPal, Microsoft, Bank..." autocomplete="off" />
+              </label>
+              <label>
+                Subject
+                <input id="subject" type="text" placeholder="Urgent: verify your account now" autocomplete="off" />
+              </label>
+              <label>
+                Detection mode
+                <select id="mode">
+                  <option value="balanced">Balanced</option>
+                  <option value="strict">Strict</option>
+                  <option value="relaxed">Relaxed</option>
+                </select>
+              </label>
+              <label>
+                Received hops
+                <input id="receivedHops" type="number" min="0" max="30" placeholder="3" autocomplete="off" />
+              </label>
+            </div>
+
+            <label class="body-field">
+              Email content
+              <textarea id="emailBody" placeholder="Paste the incoming email text here..."></textarea>
+            </label>
+
+            <div class="actions">
+              <button type="submit" class="primary" id="analyzeBtn">
+                <span class="btn-label">Analyze</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+              <button type="button" id="clearBtn">Clear</button>
+              <select id="sampleSelect" aria-label="Load sample email">
+                <option value="">Load sample</option>
+              </select>
+              <p class="inline-warning" id="validationMessage" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+
+          <aside class="result-panel" aria-live="polite">
+            <section class="analysis-status" id="analysisStatus" aria-live="polite" aria-atomic="true">
+              <div class="analysis-status__header">
+                <div class="analysis-orb" aria-hidden="true"></div>
+                <div>
+                  <p class="analysis-kicker">Processing</p>
+                  <p class="analysis-message" id="analysisMessage">Preparing analysis...</p>
+                </div>
+                <div class="analysis-meta">
+                  <span class="analysis-elapsed" id="analysisElapsed">0.0s</span>
+                </div>
+              </div>
+              <ol class="analysis-steps" id="analysisSteps">
+                <li><span class="step-dot" aria-hidden="true"></span><span class="step-text">Analyzing suspicious indicators</span></li>
+                <li><span class="step-dot" aria-hidden="true"></span><span class="step-text">Inspecting sender reputation</span></li>
+                <li><span class="step-dot" aria-hidden="true"></span><span class="step-text">Evaluating phishing patterns</span></li>
+                <li><span class="step-dot" aria-hidden="true"></span><span class="step-text">Running AI-assisted analysis</span></li>
+                <li><span class="step-dot" aria-hidden="true"></span><span class="step-text">Finalizing verdict</span></li>
+              </ol>
+            </section>
+
+            <div class="score-block">
+              <div class="score-ring" id="scoreRing">
+                <span id="scoreValue">--</span>
+              </div>
+              <div>
+                <h2 id="verdict">No analysis yet</h2>
+                <p id="summary">Enter an email and analyze it with rules + assistant.</p>
+              </div>
+            </div>
+
+            <div class="risk-bar" aria-hidden="true">
+              <span></span>
+            </div>
+
+            <section>
+              <h3>Verdict breakdown</h3>
+              <div class="verdict-grid" aria-label="Verdict breakdown">
+                <div class="verdict-card">
+                  <span class="verdict-label">Rule-based</span>
+                  <strong class="verdict-value" id="ruleVerdict">--</strong>
+                  <span class="verdict-sub" id="ruleScore">--</span>
+                </div>
+                <div class="verdict-card">
+                  <span class="verdict-label">Assistant</span>
+                  <strong class="verdict-value" id="assistantVerdict">--</strong>
+                  <span class="verdict-sub" id="assistantMeta">--</span>
+                </div>
+                <div class="verdict-card">
+                  <span class="verdict-label">Final (combined)</span>
+                  <strong class="verdict-value" id="finalVerdict">--</strong>
+                  <span class="verdict-sub" id="finalScore">--</span>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h3>LLM-assisted summary</h3>
+              <p class="assistant-summary" id="assistantSummary">Assistant summary will appear after analysis.</p>
+              <ul class="assistant-reasons" id="assistantReasons">
+                <li>No assistant summary yet.</li>
+              </ul>
+              <p class="assistant-actions-label">Recommended actions</p>
+              <ul class="assistant-actions" id="assistantActions">
+                <li>Run an analysis to see suggested next steps.</li>
+              </ul>
+              <details class="assistant-json">
+                <summary>View assistant JSON</summary>
+                <pre id="assistantJson"></pre>
+              </details>
+            </section>
+
+            <section>
+              <h3>Rule-based indicators</h3>
+              <ul class="findings" id="findingsList">
+                <li>No indicators yet.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3>Explanation</h3>
+              <p class="explanation" id="explanation">
+                The tool combines content, sender, URL, and impersonation checks.
+              </p>
+            </section>
+
+            <section>
+              <h3>Passed checks</h3>
+              <ul class="findings passed" id="passedList">
+                <li>No checks have passed yet.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3>Report</h3>
+              <textarea id="reportText" readonly placeholder="Run an analysis to generate an incident-style summary."></textarea>
+            </section>
+          </aside>
+        </section>
+
+        <section class="evaluator">
+          <div>
+            <h2>Test Set Evaluation</h2>
+            <p>Run built-in phishing, legitimate, and gray-area examples to measure accuracy, precision, recall, and error types.</p>
+          </div>
+          <button type="button" id="runEvaluation">Run Evaluation</button>
+          <div class="metrics" id="metrics">
+            <div><strong>--</strong><span>Accuracy</span></div>
+            <div><strong>--</strong><span>Precision</span></div>
+            <div><strong>--</strong><span>Recall</span></div>
+            <div><strong>--</strong><span>False Positives</span></div>
+            <div><strong>--</strong><span>True Positives</span></div>
+            <div><strong>--</strong><span>True Negatives</span></div>
+            <div><strong>--</strong><span>False Negatives</span></div>
+            <div><strong>--</strong><span>Samples</span></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="src/samples.js"></script>
+    <script src="src/llm.js"></script>
+    <script src="src/detector.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>
